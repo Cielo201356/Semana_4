@@ -23,23 +23,33 @@ Sitio publicado: [https://cielo201356.github.io/Semana_4/](https://cielo201356.g
 
 ## Auditoría del proyecto
 
-**Alcance:** revisión del HTML, CSS, JavaScript y flujo de GitHub Actions. Esta es una revisión estática funcional y de seguridad básica; no sustituye una auditoría de penetración ni una suite de pruebas automatizadas.
+- **Fecha:** 7 de octubre de 2026
+- **Alcance:** revisión estática de `index.html`, `styles.css`, `script.js` y `.github/workflows/deploy-pages.yml`, además de comprobaciones de sintaxis y disponibilidad del despliegue. Es una auditoría básica de este sitio demostrativo; no sustituye una auditoría de penetración, pruebas de navegador ni un análisis automatizado de dependencias.
 
-### Resultado
+### Resumen ejecutivo
 
-- **Críticos/altos:** no se identificaron problemas en el alcance revisado.
-- **Medios:** no se identificaron problemas en el alcance revisado.
-- **Bajos:** se registran las siguientes observaciones y recomendaciones.
+No se identificaron vulnerabilidades críticas, altas o medias en el alcance revisado. Se anotan dos mejoras de bajo riesgo. La aplicación es una página estática sin backend, formularios, datos sensibles ni dependencias de paquetes de aplicación.
+
+### Hallazgos y recomendaciones
 
 | Severidad | Observación | Recomendación |
 | --- | --- | --- |
-| Baja | Las acciones de GitHub Actions usan etiquetas de versión (`@v4`, `@v5`) en vez de fijar cada dependencia a un SHA completo. | Para reforzar la integridad de la cadena de suministro, fijar las acciones a SHA verificados y actualizar esos SHA de forma controlada. |
-| Baja | La aplicación genera un usuario y un resultado aleatorios; no consulta un servicio real ni valida respuestas de una API. | Mantener explícito que es una demostración. Si se conecta a un backend, validar la respuesta y tratar los errores de red y de datos inesperados. |
-| Baja | No hay pruebas automatizadas para la interfaz ni para los resultados exitoso y fallido. | Añadir pruebas si el proyecto evoluciona más allá de esta demostración pequeña. |
+| Baja | El workflow referencia acciones de terceros por etiquetas mayores (`@v4`, `@v5`), que pueden avanzar a nuevas versiones dentro de esa etiqueta. | Para fijar exactamente el código ejecutado, considerar SHA completos verificados y actualizarlos de forma controlada. |
+| Baja | La respuesta de usuario y el fallo son aleatorios y simulados; no se realizan solicitudes a un servicio ni se valida una respuesta remota. | Mantener claro que es una demostración. Si se conecta a un backend, validar los datos recibidos y manejar errores de red y respuestas inesperadas. |
+| Nota | No hay una suite de pruebas automatizadas para la interfaz o el comportamiento de éxito y error. | Añadir pruebas si el proyecto crece o se integra con servicios reales. |
 
-### Controles revisados
+### Comprobaciones realizadas
+
+- `node --check script.js`: pasó; no detectó errores de sintaxis.
+- La página publicada y los recursos `script.js` y `styles.css` respondieron con HTTP 200.
+- Las dos ejecuciones disponibles del workflow de GitHub Actions finalizaron correctamente.
+- Revisión manual del flujo: el botón muestra el estado de carga, la promesa simula éxito/error tras 800 ms y el `catch` presenta el error en la página.
+- `git diff --check`: pasó para los cambios de documentación.
+
+### Controles observados en el código
 
 - Los textos dinámicos se insertan con `textContent`, no como HTML.
-- El rechazo de la promesa se captura y se muestra en la interfaz; el elemento de resultado utiliza `aria-live="polite"`.
-- El flujo de publicación declara permisos explícitos y limitados al despliegue de Pages (`contents: read`, `pages: write`, `id-token: write`).
-- La ejecución inicial de GitHub Actions terminó correctamente y el sitio publicado respondió con HTTP 200.
+- El botón es un control HTML nativo y el resultado usa `aria-live="polite"` para anunciar cambios.
+- El workflow declara permisos explícitos para leer el repositorio y publicar Pages (`contents: read`, `pages: write`, `id-token: write`); se ejecuta en `ubuntu-latest` y cancela despliegues anteriores del mismo grupo cuando hay uno nuevo.
+
+**Limitaciones:** las comprobaciones no incluyen una prueba interactiva en navegador, análisis dinámico, escaneo de vulnerabilidades de acciones/dependencias ni evaluación de accesibilidad con tecnologías de asistencia.
